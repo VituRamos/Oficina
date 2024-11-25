@@ -1,0 +1,9 @@
+Natureza = NewTileSetPlants -> TX Plant
+Escadas = NewTileSetEscadas -> TX Struct
+Estruturas2 = NewTileSetElementos -> TX Props
+Estruturas = NewTileSetElementos -> TX Props
+ShadowNatureza ->NewTileSetShadowsPlants -> TxShadowPlant
+Paredes = NewTileSetWalls -> TxTilesetWall
+ShadowElementos -> NewTileSetShadows -> TxShadow
+Chao2 = NewTileSetElementos -> TX Props
+Chao1 = NewTileSetChao -> TX Tileset Grass
