@@ -31,6 +31,7 @@
           this.load.image("elements", "TXProps.png");
           this.load.image("stair", "TXStruct.png");
           this.load.image("walls", "TXTilesetWall.png");
+          this.load.image("todos", "todos.png");
 
           this.load.tilemapTiledJSON("themap", "Mapa_full.json");
         }
@@ -73,6 +74,7 @@
             "NewTileSetWalls",
             "walls"
           );
+          this.tileset_todos = this.map.addTilesetImage("Todos", "todos");
 
           // criação das camadas
           this.gndLayer = this.map.createLayer(
@@ -87,6 +89,7 @@
             0,
             0
           );
+          this.gndLayer_2_elements = this.map.createLayer("Chao2", this);
           this.shadowLayer = this.map.createLayer(
             "ShadowElementos",
             this.tileset_shadows,
@@ -136,7 +139,7 @@
           //criação da colisão
           this.structLayer.setCollisionBetween(0, 4000, true);
           this.structLayer_2.setCollisionBetween(0, 4000, true);
-          this.wallsLayer.setCollisionBetween(0, 100, true);
+          this.wallsLayer.setCollisionBetween(0, 4000, true);
           this.physics.add.collider(this.player, this.structLayer);
           this.physics.add.collider(this.player, this.structLayer_2);
           this.physics.add.collider(this.player, this.wallsLayer);
