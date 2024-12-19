@@ -134,7 +134,9 @@
           );
 
           // criação do jogador
-          this.player = this.physics.add.sprite(100, 100, "player_sp", 5);
+          this.player = this.physics.add.sprite(1225, 1800, "player_sp", 5);
+          this.player.body.setSize(35, 30);
+          this.player.body.setOffset(15, 20);
 
           //criação da colisão
           this.structLayer.setCollisionBetween(0, 4000, true);
@@ -155,10 +157,74 @@
           this.space_pressed = false;
 
           this.cameras.main.startFollow(this.player);
+          this.canMove = false;
+
+          //Mensagem de Bem-vindo ao jogo + pergunta
+          const message = this.add.text(1225, 1500, "Bem-vindo ao jogo!", {
+            font: "20px Arial",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+            padding: { x: 10, y: 5 },
+            align: "center",
+          });
+
+          message.setOrigin(0.5, 0.5); //Centralizar o texto
+          this.children.bringToTop(message);
+
+          this.time.delayedCall(2000, () => {
+            message.destroy(); // Remove o texto da tela
+            this.canMove = true;
+          });
+
+          var text_cfg = {
+            font: "10px Arial",
+            fill: "#FFF",
+            backgroundColor: "#000000",
+            align: "center",
+          };
+
+          this.mines = this.physics.add.group();
+
+          const mine1 = this.mines
+            .create(1025, 1600, "player_sp")
+            .setVisible(false);
+          mine1.mineType = "correta";
+          const mine2 = this.mines
+            .create(1225, 1600, "player_sp")
+            .setVisible(false);
+          mine2.mineType = "errada";
+          const mine3 = this.mines
+            .create(1425, 1600, "player_sp")
+            .setVisible(false);
+          mine3.mineType = "errada";
+
+          this.mine1 = this.add
+            .text(1025, 1600, "RESPOSTA 1 \n Correta", text_cfg)
+            .setOrigin(0.5);
+          this.mine2 = this.add
+            .text(1225, 1600, "RESPOSTA 2 \n Errada", text_cfg)
+            .setOrigin(0.5);
+          this.mine3 = this.add
+            .text(1425, 1600, "RESPOSTA 3 \n Errada", text_cfg)
+            .setOrigin(0.5);
+
+          this.mineText = this.physics.add.overlap(
+            this.player,
+            this.mines,
+            mine_collide_cback,
+            null,
+            this
+          );
         }
 
         // update é chamada a cada novo quadro
         update() {
+          //Travar personagem
+          if (!this.canMove) {
+            this.player.setVelocity(0); // Personagem parado
+            return; // Sai do método update
+          }
+
           // velocidade horizontal
           if (this.keyD?.isDown) this.player.setVelocityX(250);
           else if (this.keyA?.isDown) this.player.setVelocityX(-250);
@@ -175,13 +241,22 @@
         }
       }
 
+      function mine_collide_cback(player, mine, scene) {
+        console.log("Escolhendo resposta");
+        if (mine.mineType === "correta") {
+          console.log("Você escolheu a resposta correta!");
+        } else if (mine.mineType === "errada") {
+          console.log("Resposta errada, tente novamente.");
+        }
+      }
+
       // Configuração do jogo
       var config = {
         type: Phaser.AUTO,
 
         // resolução e sistema de colisão.
-        width: 800,
-        height: 600,
+        width: 1280,
+        height: 720,
         physics: {
           default: "arcade",
           arcade: {
