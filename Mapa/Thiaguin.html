@@ -4,8 +4,8 @@
   <head>
     <meta charset="UTF-8" />
     <title>Intro Phaser 3.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.87.0/phaser.min.js"></script>
-
     <style type="text/css">
       body {
         margin: 0;
@@ -19,10 +19,19 @@
         // função para carregamento de assets
         preload() {
           console.log("load assets");
-          this.load.spritesheet("player_sp", "a-king.png", {
-            frameWidth: 78,
-            frameHeight: 58,
-          });
+          this.load.spritesheet("player_sp", "soldier.png", {
+            frameWidth: 100,
+            frameHeight: 100,
+          })
+          this.load.spritesheet("player2_sp", "goblin.png", {
+            frameWidth: 86,
+            frameHeight: 86,
+          })
+          this.load.spritesheet("bag", "bag.png", {
+            frameWidth: 120,
+            frameHeight: 120,
+          })
+          ;
 
           this.load.image("ground", "TXTilesetGrass.png");
           this.load.image("nature", "TXPlant.png");
@@ -39,13 +48,13 @@
         // função para criação dos elementos
         create() {
           // criação do mapa e ligação com a imagem (tilesheet)
-          console.log("c map");
+          console.log("create map");
           this.map = this.make.tilemap({
             key: "themap",
             tileWidth: 32,
             tileHeight: 32,
           });
-          console.log("c tset");
+          console.log("create tset");
           this.tileset_ground = this.map.addTilesetImage(
             "NewTileSetChao",
             "ground"
@@ -134,9 +143,13 @@
           );
 
           // criação do jogador
-          this.player = this.physics.add.sprite(1225, 1800, "player_sp", 5);
+          this.player = this.physics.add.sprite(1225, 1700, "player_sp", 1);
           this.player.body.setSize(35, 30);
-          this.player.body.setOffset(15, 20);
+          this.player.body.setOffset(30, 30);
+
+          this.player2 = this.physics.add.sprite(1225, 1300, "player_sp", 1);
+          this.player2.body.setSize(35, 30);
+          this.player2.body.setOffset(30, 30);
 
           //criação da colisão
           this.structLayer.setCollisionBetween(0, 4000, true);
@@ -159,34 +172,61 @@
           this.cameras.main.startFollow(this.player);
           this.canMove = false;
 
-          //Mensagem de Bem-vindo ao jogo + pergunta
-          const message = this.add.text(1225, 1500, "Bem-vindo ao jogo!", {
-            font: "20px Arial",
-            fill: "#ffffff",
-            backgroundColor: "#000000", // Cor de fundo para garantir visibilidade
-            padding: { x: 10, y: 5 }, // Adiciona espaçamento ao fundo
-            align: "center",
+          // Exibir mensagem de Bem-vindo ao jogo
+          const welcomeBox = this.add.rectangle(1225, 1400, 400, 100, 0x000000)
+            .setStrokeStyle(2, 0xffffff);
+
+          const welcomeMessage = this.add.text(1225, 1400, "Bem-vindo ao jogo!", {
+            fontFamily: 'Press Start 2P',
+            fontSize: '16px',
+            fill: '#ffffff', // Texto branco
+            backgroundColor: "#000000",
+            align: 'center',
+            wordWrap: { width: 380 }, // Quebra automática
+          }).setOrigin(0.5, 0.5);
+
+          welcomeMessage.setScale(2);
+
+          // Remove a mensagem de Bem-vindo após 4 segundos
+            this.time.delayedCall(5000, () => {
+            welcomeMessage.destroy();
+            welcomeBox.destroy();
           });
 
-          message.setOrigin(0.5, 0.5); //Centralizar o texto
-          this.children.bringToTop(message);
+          // Exibir instruções após 6 segundos
+          this.time.delayedCall(5000, () => {
+            const instructionBox = this.add.rectangle(1225, 1400, 400, 100, 0x000000)
+              .setStrokeStyle(2, 0xffffff);
 
-          this.time.delayedCall(2000, () => {
-            message.destroy(); // Remove o texto da tela
-            this.canMove = true;
-            this.showAnswers(); // Exibir as respostas
+            const instructionMessage = this.add.text(1225, 1400, 
+              "Se mova usando WASD e escolha\n a resposta com a tecla SPACE!", {
+            fontFamily: 'Press Start 2P',
+            fontSize: '16px',
+            fill: '#ffffff', // Texto branco
+            backgroundColor: "#000000",
+            align: 'center',
+            wordWrap: { width: 380 }, // Quebra automática
+          }).setOrigin(0.5, 0.5);
+
+          instructionMessage.setScale(2);
+
+          // Remove as instruções após 7 segundos
+          this.time.delayedCall(5000, () => {
+          instructionMessage.destroy();
+          instructionBox.destroy();
+
+          // Permitir movimento e exibir próxima interação
+          this.canMove = true;
+          this.showAnswers(); // Exibir as respostas
+          this.showMessage("Responda a pergunta:\n Quanto é 5 + 3?"); // Exibir pergunta
           });
-
-          this.mines = this.physics.add.group();
-          this.mines.create(1025, 1600, "player_sp").setVisible(false);
-          this.mines.create(1225, 1600, "player_sp").setVisible(false);
-          this.mines.create(1425, 1600, "player_sp").setVisible(false);
-        }
+        });
+    }
 
         showAnswers() {
           // Respostas (texto)
           this.answer1 = this.add.text(1025, 1600, "8", {
-            font: "20px Arial",
+            font: "20px Press Start 2P",
             fill: "#ffffff",
             backgroundColor: "#000000",
             padding: { x: 10, y: 5 },
@@ -194,7 +234,7 @@
           }).setOrigin(0.5, 0.5).setInteractive().setData("answer", 8); // Resposta correta
 
           this.answer2 = this.add.text(1225, 1600, "5", {
-            font: "20px Arial",
+            font: "20px Press Start 2P",
             fill: "#ffffff",
             backgroundColor: "#000000",
             padding: { x: 10, y: 5 },
@@ -202,7 +242,7 @@
           }).setOrigin(0.5, 0.5).setInteractive().setData("answer", 5); // Resposta errada
 
           this.answer3 = this.add.text(1425, 1600, "10", {
-            font: "20px Arial",
+            font: "20px Press Start 2P",
             fill: "#ffffff",
             backgroundColor: "#000000",
             padding: { x: 10, y: 5 },
@@ -234,50 +274,110 @@
           if (selectedAnswer) {
             console.log("Resposta selecionada");
             const answerValue = selectedAnswer.data.get("answer");
+            this.canMove = false;
             console.log(answerValue);
             if (answerValue === 8) {
-              this.showResult("Você acertou! 5 + 3 = 8");
+              this.showMessage("Você acertou! 5 + 3 = 8");
+              this.time.delayedCall(4000, () => {
+                this.canMove = true;
+              });
+
             } else {
-              this.showResult("Você errou! Tente novamente.");
+              this.showMessage("Você errou!");
+              this.time.delayedCall(4000, () => {
+                this.player.setTexture("player2_sp", 1); // Quadro original
+                this.canMove = true;
+                this.checkPlayerCollision();
+              });
             }
+            this.removeAnswer();
           }
         }
 
-        checkAnswer(player, answer) {
-          const answerValue = answer.data.get("answer");
-
-          if (answerValue === 8) {
-            this.showResult("Você acertou! 5 + 3 = 8");
-          } else {
-            this.showResult("Você errou! Tente novamente.");
-          }
+        //Função remover opções de resposta
+        removeAnswer(){
+          this.answer1.destroy();
+          this.answer2.destroy();
+          this.answer3.destroy();
+          this.answer1Collider.destroy();
+          this.answer2Collider.destroy();
+          this.answer3Collider.destroy();
         }
 
-        // Função para exibir a mensagem de acerto ou erro
-        showResult(message) {
-          const resultText = this.add.text(
-            1225,
-            1400,
-            message,
-            {
-              font: "20px Arial",
-              fill: "#ffffff",
-              backgroundColor: "#000000",
-              padding: { x: 10, y: 5 },
-              align: "center",
-            }
-          ).setOrigin(0.5, 0.5);
+        showMessage(messageText) {
+        // Obter a posição da câmera para centralizar a mensagem
+          const camera = this.cameras.main;
+          const x = camera.scrollX + camera.width / 2; // Centro horizontal
+          const y = camera.scrollY + 60;              // Parte superior
 
-          this.children.bringToTop(message);
+        // Caixa de texto no estilo 16 bits
+          const messageBox = this.add.rectangle(x, y, 400, 100, 0x000000)
+          .setStrokeStyle(2, 0xffffff)
+          .setOrigin(0.5, 0.5); // Centraliza no ponto especificado
 
-          // Remover a mensagem após 2 segundos
-          this.time.delayedCall(2000, () => {
-            resultText.destroy();
+        // Texto com fonte estilo retro
+          const message = this.add.text(x, y, messageText, {
+          fontFamily: 'Press Start 2P', // Fonte retrô popular
+          fontSize: '12px',
+          fill: '#ffffff', // Texto branco
+          align: 'center',
+          wordWrap: { width: 380 }, // Quebra automática
+          }).setOrigin(0.5, 0.5);
+
+          message.setScale(2);
+
+        // Atualiza posição do texto e caixa a cada quadro (para seguir a câmera)
+          this.events.on('update', () => {
+          const updatedX = camera.scrollX + camera.width / 2;
+          const updatedY = camera.scrollY + 60;
+          messageBox.setPosition(updatedX, updatedY);
+          message.setPosition(updatedX, updatedY);
           });
+
+        // Remover mensagem após 6 segundos
+          this.time.delayedCall(6000, () => {
+          messageBox.destroy();
+          message.destroy();
+          });
+        }
+
+        checkPlayerCollision(){
+          this.playerOverlap = this.physics.add.overlap(this.player, this.player2, this.onPlayerCollision, null, this);
+        }
+
+        onPlayerCollision(player,player2){
+          console.log("Encontro");
+          //player.setTint(0xff0000);
+
+          const collisionX = (player.x + player2.x) / 2;
+          const collisionY = (player.y + player2.y) / 2;
+
+          this.bag = this.physics.add.sprite(collisionX, collisionY, "bag");
+          this.bag.setScale(0.40);
+
+          this.playerOverlap.destroy();
+
+          const currentSprite = player.texture.key; // Obtém o nome da textura atual
+          console.log("Sprite atual do jogador:", currentSprite);
+
+          this.time.delayedCall(100, () => {
+            player.setAlpha(0);
+            player.body.enable = false;
+            console.log("Jogador transformado em moeda");
+          }); 
+        }
+
+        checkBagCollision(){
+
+        }
+
+        onBagCollision(){
+
         }
 
         // update é chamada a cada novo quadro
         update() {
+
           // Travar personagem
           if (!this.canMove) {
             this.player.setVelocity(0); // Personagem parado
@@ -303,6 +403,11 @@
             console.log("Tecla espaço pressionada!");
             this.selectAnswer();
           }
+
+          if (this.messageText) { // Garante que a variável está definida
+            this.messageText.setText(`Coordenadas: X=${Math.round(this.player.x)}, Y=${Math.round(this.player.y)}`);
+          }
+
         }
       }
 
