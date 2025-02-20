@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<!-- HTML Padrão -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Intro Phaser 3.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.87.0/phaser.min.js"></script>
+    <style type="text/css">
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- código javascript -->
+    <script type="text/javascript">
+      class gravity_arrow extends Phaser.Scene {
+        // função para carregamento de assets
+        preload() {
+          console.log("load assets");
+          this.load.spritesheet("player_sp", "soldier.png", {
+            frameWidth: 100,
+            frameHeight: 100,
+          })
+          this.load.spritesheet("player2_sp", "goblin.png", {
+            frameWidth: 86,
+            frameHeight: 86,
+          })
+          this.load.spritesheet("bag", "bag.png", {
+            frameWidth: 120,
+            frameHeight: 120,
+          })
+          ;
+
+          this.load.image("ground", "TXTilesetGrass.png");
+          this.load.image("nature", "TXPlant.png");
+          this.load.image("shadows", "TXShadow.png");
+          this.load.image("shadowsplant", "TXShadowPlant.png");
+          this.load.image("elements", "TXProps.png");
+          this.load.image("stair", "TXStruct.png");
+          this.load.image("walls", "TXTilesetWall.png");
+          this.load.image("todos", "todos.png");
+
+          this.load.tilemapTiledJSON("themap", "Mapa_full.json");
+        }
+
+        // função para criação dos elementos
+        create() {
+
+
+         
+          // criação do mapa e ligação com a imagem (tilesheet)
+          console.log("create map");
+          this.map = this.make.tilemap({
+            key: "themap",
+            tileWidth: 32,
+            tileHeight: 32,
+          });
+          console.log("create tset");
+          this.tileset_ground = this.map.addTilesetImage(
+            "NewTileSetChao",
+            "ground"
+          );
+          this.tileset_nature = this.map.addTilesetImage(
+            "NewTitleSetPlants",
+            "nature"
+          );
+          this.tileset_shadows = this.map.addTilesetImage(
+            "NewTileSetShadows",
+            "shadows"
+          );
+          this.tileset_shadowsplant = this.map.addTilesetImage(
+            "NewTileSetShadowsPlants",
+            "shadowsplant"
+          );
+          this.tileset_elements = this.map.addTilesetImage(
+            "NewTileSetElementos",
+            "elements"
+          );
+          this.tileset_stair = this.map.addTilesetImage(
+            "NewTileSetEscadas",
+            "stair"
+          );
+          this.tileset_walls = this.map.addTilesetImage(
+            "NewTileSetWalls",
+            "walls"
+          );
+          this.tileset_todos = this.map.addTilesetImage("Todos", "todos");
+
+          // criação das camadas
+          this.gndLayer = this.map.createLayer(
+            "Chao1",
+            this.tileset_ground,
+            0,
+            0
+          );
+          this.gndLayer_2 = this.map.createLayer(
+            "Chao2",
+            this.tileset_elements,
+            0,
+            0
+          );
+          this.gndLayer_2_elements = this.map.createLayer("Chao2", this);
+          this.shadowLayer = this.map.createLayer(
+            "ShadowElementos",
+            this.tileset_shadows,
+            0,
+            0
+          );
+          this.wallsLayer = this.map.createLayer(
+            "Paredes",
+            this.tileset_walls,
+            0,
+            0
+          );
+          this.shadownatureLayer = this.map.createLayer(
+            "ShadowNatureza",
+            this.tileset_shadowsplant,
+            0,
+            0
+          );
+          this.structLayer = this.map.createLayer(
+            "Estruturas",
+            this.tileset_elements,
+            0,
+            0
+          );
+          this.structLayer_2 = this.map.createLayer(
+            "Estruturas2",
+            this.tileset_elements,
+            0,
+            0
+          );
+          this.stairLayer = this.map.createLayer(
+            "Escadas",
+            this.tileset_stair,
+            0,
+            0
+          );
+          this.plantLayer = this.map.createLayer(
+            "Natureza",
+            this.tileset_nature,
+            0,
+            0
+          );
+
+          this.scorePlayer1 = this.registry.get("scorePlayer1") || 0;
+          this.scorePlayer2 = this.registry.get("scorePlayer2") || 0;
+          this.scoreTextPlayer1 = this.add.text(20, 20, `Player 1: ${this.scorePlayer1}`, {
+            font: "20px Press Start 2P",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+            padding: { x: 10, y: 5 },
+          }).setScrollFactor(0);
+
+          // Exibir a pontuação do jogador 2 na parte superior direita
+          this.scoreTextPlayer2 = this.add.text(1080, 20, `Player 2: ${this.scorePlayer2}`, {
+            font: "20px Press Start 2P",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+            padding: { x: 10, y: 5 },
+          }).setScrollFactor(0);
+
+          // criação do jogador
+          this.player = this.physics.add.sprite(1225, 1700, "player_sp", 1);
+          this.player.body.setSize(35, 30);
+          this.player.body.setOffset(30, 30);
+
+          this.player2 = this.physics.add.sprite(1225, 1300, "player_sp", 1);
+          this.player2.body.setSize(35, 30);
+          this.player2.body.setOffset(30, 30);
+
+          this.bagExists = false;
+          this.checkPlayerCollision();
+
+          
+
+          // Criar a primeira câmera para o player 1 (lado esquerdo)
+          this.camera1 = this.cameras.add(0, 0, this.game.config.width / 2, this.game.config.height);
+          this.camera1.startFollow(this.player);
+          this.camera1.setBackgroundColor(0x222222); // Cor de fundo opcional
+
+           
+          this.camera2 = this.cameras.add(this.game.config.width / 2, 0, this.game.config.width / 2, this.game.config.height);
+          this.camera2.startFollow(this.player2);
+          this.camera2.setBackgroundColor(0x444444); // Cor de fundo opcional   
+          // Criar duas câmeras
+         
+
+          
+
+         
+          //criação da colisão
+          this.structLayer.setCollisionBetween(0, 4000, true);
+          this.structLayer_2.setCollisionBetween(0, 4000, true);
+          this.wallsLayer.setCollisionBetween(0, 4000, true);
+          this.physics.add.collider(this.player, this.structLayer);
+          this.physics.add.collider(this.player, this.structLayer_2);
+          this.physics.add.collider(this.player, this.wallsLayer);
+          
+
+       
+          this.physics.add.collider(this.player2, this.structLayer);
+          this.physics.add.collider(this.player2, this.structLayer_2);
+          this.physics.add.collider(this.player2, this.wallsLayer);
+
+          // ligação das teclas de movimento
+          this.keyA = this.input.keyboard.addKey("A");
+          this.keyD = this.input.keyboard.addKey("D");
+          this.keyW = this.input.keyboard.addKey("W");
+          this.keyS = this.input.keyboard.addKey("S");
+          this.keySpace = this.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SPACE
+          );
+          this.space_pressed = false;
+
+          this.keyLeft = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+          this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+          this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+          this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN); 
+
+
+          this.cameras.main.startFollow(this.player);
+          this.canMove = false;
+
+          // Exibir mensagem de Bem-vindo ao jogo
+          const welcomeBox = this.add.rectangle(1225, 1400, 400, 100, 0x000000)
+            .setStrokeStyle(2, 0xffffff);
+
+          const welcomeMessage = this.add.text(1225, 1400, "Bem-vindo ao jogo!", {
+            fontFamily: 'Press Start 2P',
+            fontSize: '16px',
+            fill: '#ffffff', // Texto branco
+            backgroundColor: "#000000",
+            align: 'center',
+            wordWrap: { width: 380 }, // Quebra automática
+          }).setOrigin(0.5, 0.5);
+
+          welcomeMessage.setScale(2);
+
+          // Remove a mensagem de Bem-vindo após 4 segundos
+            this.time.delayedCall(2000, () => {
+            welcomeMessage.destroy();
+            welcomeBox.destroy();
+          });
+
+          // Exibir instruções após 6 segundos
+          this.time.delayedCall(2000, () => {
+            const instructionBox = this.add.rectangle(1225, 1400, 400, 100, 0x000000)
+              .setStrokeStyle(2, 0xffffff);
+
+            const instructionMessage = this.add.text(1225, 1400, 
+              "Se mova usando WASD e escolha\n a resposta com a tecla SPACE!", {
+            fontFamily: 'Press Start 2P',
+            fontSize: '16px',
+            fill: '#ffffff', // Texto branco
+            backgroundColor: "#000000",
+            align: 'center',
+            wordWrap: { width: 380 }, // Quebra automática
+          }).setOrigin(0.5, 0.5);
+
+          instructionMessage.setScale(2);
+
+          // Remove as instruções após 7 segundos
+          this.time.delayedCall(2000, () => {
+          instructionMessage.destroy();
+          instructionBox.destroy();
+
+          // Permitir movimento e exibir próxima interação
+          this.canMove = true;
+          this.showAnswers(); // Exibir as respostas
+          this.showMessage("Responda a pergunta:\n Quanto é 5 + 3?"); // Exibir pergunta
+          });
+        });
+    }
+
+        showAnswers() {
+          // Respostas (texto)
+          this.answer1 = this.add.text(1025, 1600, "8", {
+            font: "20px Press Start 2P",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+            padding: { x: 10, y: 5 },
+            align: "center",
+          }).setOrigin(0.5, 0.5).setInteractive().setData("answer", 8); // Resposta correta
+
+          this.answer2 = this.add.text(1225, 1600, "5", {
+            font: "20px Press Start 2P",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+            padding: { x: 10, y: 5 },
+            align: "center",
+          }).setOrigin(0.5, 0.5).setInteractive().setData("answer", 5); // Resposta errada
+
+          this.answer3 = this.add.text(1425, 1600, "10", {
+            font: "20px Press Start 2P",
+            fill: "#ffffff",
+            backgroundColor: "#000000",
+            padding: { x: 10, y: 5 },
+            align: "center",
+          }).setOrigin(0.5, 0.5).setInteractive().setData("answer", 10); // Resposta errada
+
+        this.answer1Collider = this.physics.add.sprite(1025, 1600, 'invisible').setSize(78, 58).setAlpha(0);
+        this.answer2Collider = this.physics.add.sprite(1225, 1600, 'invisible').setSize(78, 58).setAlpha(0);
+        this.answer3Collider = this.physics.add.sprite(1425, 1600, 'invisible').setSize(78, 58).setAlpha(0);
+        }
+
+        // Função para verificar se o jogador pressionou espaço para selecionar a resposta
+        selectAnswer() {
+            let selectedAnswer = null;
+
+            // Verificar proximidade com as respostas
+            if (this.physics.overlap(this.player, this.answer1Collider)) {
+              selectedAnswer = this.answer1;
+            } else if (this.physics.overlap(this.player, this.answer2Collider)) {
+              selectedAnswer = this.answer2;
+            } else if (this.physics.overlap(this.player, this.answer3Collider)) {
+              selectedAnswer = this.answer3;
+            }
+
+            if (selectedAnswer) {
+              const answerValue = selectedAnswer.data.get("answer");
+              this.canMove = false;
+
+              // Se a resposta estiver correta
+              if (answerValue === 8) {
+                this.showMessage("Você acertou! 5 + 3 = 8");
+                this.time.delayedCall(1000, () => {
+                  this.canMove = true;
+                  this.player2.setTexture("player2_sp", 1); // Player2 vira goblin
+                  this.checkPlayerCollision(); // Verifica colisão
+                });
+              } else {
+                // Se a resposta estiver errada
+                this.showMessage("Você errou!");
+                this.time.delayedCall(1000, () => {
+                  this.player.setTexture("player2_sp", 1); // Player1 vira goblin
+                  this.canMove = true;
+                  this.checkPlayerCollision(); // Verifica colisão
+                });
+              }
+              this.removeAnswer();
+            }
+          }
+
+        //Função remover opções de resposta
+        removeAnswer(){
+          this.answer1.destroy();
+          this.answer2.destroy();
+          this.answer3.destroy();
+          this.answer1Collider.destroy();
+          this.answer2Collider.destroy();
+          this.answer3Collider.destroy();
+        }
+
+        showMessage(messageText) {
+        // Obter a posição da câmera para centralizar a mensagem
+          const camera = this.cameras.main;
+          const x = camera.scrollX + camera.width / 2; // Centro horizontal
+          const y = camera.scrollY + 60;              // Parte superior
+
+        // Caixa de texto no estilo 16 bits
+          const messageBox = this.add.rectangle(x, y, 400, 100, 0x000000)
+          .setStrokeStyle(2, 0xffffff)
+          .setOrigin(0.5, 0.5); // Centraliza no ponto especificado
+
+        // Texto com fonte estilo retro
+          const message = this.add.text(x, y, messageText, {
+          fontFamily: 'Press Start 2P', // Fonte retrô popular
+          fontSize: '12px',
+          fill: '#ffffff', // Texto branco
+          align: 'center',
+          wordWrap: { width: 380 }, // Quebra automática
+          }).setOrigin(0.5, 0.5);
+
+          message.setScale(2);
+
+        // Atualiza posição do texto e caixa a cada quadro (para seguir a câmera)
+          this.events.on('update', () => {
+          const updatedX = camera.scrollX + camera.width / 2;
+          const updatedY = camera.scrollY + 60;
+          messageBox.setPosition(updatedX, updatedY);
+          message.setPosition(updatedX, updatedY);
+          });
+
+        // Remover mensagem após 6 segundos
+          this.time.delayedCall(6000, () => {
+          messageBox.destroy();
+          message.destroy();
+          });
+        }
+
+        checkPlayerCollision() {
+  this.playerOverlap = this.physics.add.overlap(this.player, this.player2, this.onPlayerCollision, null, this);
+}
+
+// Modificação na função onPlayerCollision
+onPlayerCollision(player, player2) {
+  // Se a bag já foi criada, não criar outra
+  if (this.bagExists) return;
+  this.bagExists = true; // Marcar que a bag foi criada
+
+  console.log("Colisão detectada! Transformando em bag...");
+
+  const collisionX = (player.x + player2.x) / 2;
+  const collisionY = (player.y + player2.y) / 2;
+
+  // Criar a bag
+  this.bag = this.physics.add.sprite(collisionX, collisionY, "bag");
+  this.bag.setScale(0.40);
+
+  // Somente goblins desaparecem depois de um tempo
+  if (player.texture.key === "goblin") {
+    this.time.delayedCall(1000, () => { // Delay de 1 segundo antes de sumir
+      player.setAlpha(0);
+      player.body.enable = false;
+    });
+  }
+  if (player2.texture.key === "goblin") {
+    this.time.delayedCall(1000, () => { // Delay de 1 segundo antes de sumir
+      player2.setAlpha(0);
+      player2.body.enable = false;
+    });
+  }
+
+  // Exibir a bag e permitir coleta após um pequeno delay
+  this.time.delayedCall(2000, () => {
+    this.bag.setInteractive();
+    this.physics.add.collider(this.player, this.bag, this.collectBag, null, this);
+    this.physics.add.collider(this.player2, this.bag, this.collectBag, null, this);
+  });
+}
+
+
+
+collectBag(player, bag) {
+  // Destruir a bag
+  bag.destroy();
+  this.bag = null;
+  this.bagExists = false;
+
+  // Determinar qual jogador coletou a bag
+  if (player === this.player) {
+    this.scorePlayer1 += 10; // Adiciona 10 pontos para o jogador 1
+    this.registry.set("scorePlayer1", this.scorePlayer1); // Atualiza no registro
+  } else if (player === this.player2) {
+    this.scorePlayer2 += 10; // Adiciona 10 pontos para o jogador 2
+    this.registry.set("scorePlayer2", this.scorePlayer2); // Atualiza no registro
+  }
+
+  // Atualizar a exibição das pontuações
+  this.scoreTextPlayer1.setText(`Player 1: ${this.scorePlayer1}`);
+  this.scoreTextPlayer2.setText(`Player 2: ${this.scorePlayer2}`);
+
+  // Exibir uma mensagem ou qualquer coisa antes de reiniciar o jogo
+  this.showMessage("Você coletou a bag! Reiniciando o jogo...");
+
+  // Reiniciar a cena após 2 segundos
+  this.time.delayedCall(2000, () => {
+    this.scene.restart();  // Reinicia a cena atual
+  });
+}
+
+
+
+
+
+
+
+        // update é chamada a cada novo quadro
+        update() {
+
+          // Travar personagem
+          if (!this.canMove) {
+            this.player.setVelocity(0); // Personagem parado
+            return; // Sai do método update
+          }
+
+          // Velocidade horizontal
+          if (this.keyD?.isDown) this.player.setVelocityX(250);
+          else if (this.keyA?.isDown) this.player.setVelocityX(-250);
+          else {
+            this.player.setVelocityX(0);
+          }
+
+          // Velocidade vertical
+          if (this.keyS?.isDown) this.player.setVelocityY(250);
+          else if (this.keyW?.isDown) this.player.setVelocityY(-250);
+          else {
+            this.player.setVelocityY(0);
+          }
+          
+          if (this.keyRight.isDown) this.player2.setVelocityX(250);
+          else if (this.keyLeft.isDown) this.player2.setVelocityX(-250);
+          else this.player2.setVelocityX(0);
+
+          if (this.keyDown.isDown) this.player2.setVelocityY(250);
+          else if (this.keyUp.isDown) this.player2.setVelocityY(-250);
+          else this.player2.setVelocityY(0);      
+
+
+          // Se o jogador apertar a tecla espaço
+          if (this.keySpace.isDown) {
+            console.log("Tecla espaço pressionada!");
+            this.selectAnswer();
+          }
+
+          if (this.messageText) { // Garante que a variável está definida
+            this.messageText.setText(`Coordenadas: X=${Math.round(this.player.x)}, Y=${Math.round(this.player.y)}`);
+          }
+          
+         
+        }
+      }
+
+      // Configuração do jogo
+      var config = {
+        type: Phaser.AUTO,
+
+        // Resolução e sistema de colisão
+        width: 1280,
+        height: 720,
+        physics: {
+          default: "arcade",
+          arcade: {
+            debug: true,
+          },
+        },
+
+        // Tratamento dos gráficos: pixelado
+        render: {
+          antialiasGL: false,
+          pixelArt: true,
+        },
+
+        // Funções da classe scene
+        scene: [gravity_arrow],
+      };
+
+      var game = new Phaser.Game(config);
+    </script>
+  </body>
+</html
